@@ -59,7 +59,7 @@ layout_mode = 2
 size_flags_vertical = 3
 
 [node name="ScrollContainer" type="ScrollContainer" parent="Main/PanelContainer"]
-custom_minimum_size = Vector2(0, 240)
+custom_minimum_size = Vector2(0, 360)
 layout_mode = 2
 horizontal_scroll_mode = 0
 
@@ -137,4 +137,22 @@ access = 2
 filters = PackedStringArray("*.zip")
 use_native_dialog = true
 
+[node name="ImportFileDialog" type="FileDialog" parent="."]
+auto_translate_mode = 1
+title = "Импорт из ZIP"
+ok_button_text = "Open"
+mode_overrides_title = false
+file_mode = 0
+access = 2
+filters = PackedStringArray("*.zip")
+use_native_dialog = true
+
+[node name="DeleteDialog" type="ConfirmationDialog" parent="."]
+title = "Удаление"
+unresizable = true
+ok_button_text = "Удалить"
+cancel_button_text = "Отмена"
+
+[connection signal="pressed" from="Main/Actions/Import" to="ImportFileDialog" method="popup_centered"]
 [connection signal="timeout" from="ResetStatusTimer" to="Status" method="set_text" binds= [""]]
+[connection signal="file_selected" from="ImportFileDialog" to="." method="_import_version"]
