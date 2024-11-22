@@ -1,0 +1,8 @@
+# Godot 4+ specific ignores
+.godot/
+# Imported translations (automatically generated from CSV files)
+*.translation
+# Android ignores
+/android/
+# Backup ignores
+*~

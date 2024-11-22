@@ -1,0 +1,65 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="Circle Shot Launcher"
+config/version="1.0.0.0"
+run/main_scene="res://launcher/launcher.tscn"
+config/use_custom_user_dir=true
+config/custom_user_dir_name="circle-shot-launcher"
+config/features=PackedStringArray("4.4", "GL Compatibility")
+run/low_processor_mode=true
+boot_splash/bg_color=Color(0, 0, 0, 1)
+boot_splash/image="res://misc/boot_splash.png"
+config/icon="res://misc/icon.png"
+config/windows_native_icon="res://misc/windows_icon.ico"
+
+[audio]
+
+driver/driver="Dummy"
+
+[debug]
+
+settings/crash_handler/message="Launcher crashed! You should restart it, but if crash persist, report it on https://github.com/Diamond-Studio-GAMES/circle-shot/issues"
+settings/crash_handler/message.editor="Launcher crashed! This can be an engine bug or developer mistake."
+file_logging/enable_file_logging.pc=false
+gdscript/warnings/untyped_declaration=2
+gdscript/warnings/unsafe_property_access=1
+gdscript/warnings/unsafe_method_access=1
+gdscript/warnings/unsafe_cast=1
+gdscript/warnings/unsafe_call_argument=1
+
+[display]
+
+window/size/viewport_width=960
+window/size/viewport_height=640
+window/subwindows/embed_subwindows=false
+
+[filesystem]
+
+import/fbx2gltf/enabled=false
+import/blender/enabled=false
+
+[gui]
+
+theme/custom="res://theme/theme.tres"
+
+[physics]
+
+common/enable_object_picking=false
+
+[rendering]
+
+gl_compatibility/fallback_to_native=false
+gl_compatibility/fallback_to_gles=false
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+shader_compiler/shader_cache/enabled=false

@@ -1,0 +1,140 @@
+[gd_scene load_steps=6 format=3 uid="uid://d5mjmjdvuooq"]
+
+[ext_resource type="Texture2D" uid="uid://ce85akj60qpwq" path="res://launcher/logo.png" id="1_63yqy"]
+[ext_resource type="Script" path="res://launcher/launcher.gd" id="2_pedqv"]
+[ext_resource type="Texture2D" uid="uid://cn2xxcww6v17s" path="res://theme/icons/download.png" id="4_4bsd8"]
+[ext_resource type="Texture2D" uid="uid://dk44uwb5hqhoe" path="res://theme/icons/settings.png" id="5_8nuhe"]
+[ext_resource type="Texture2D" uid="uid://drs5k781fbf3p" path="res://theme/icons/import.png" id="5_amdgm"]
+
+[node name="Launcher" type="Control"]
+physics_interpolation_mode = 0
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("2_pedqv")
+metadata/_custom_type_script = ExtResource("2_pedqv")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.769531, 0.769531, 0.769531, 1)
+
+[node name="Main" type="VBoxContainer" parent="."]
+custom_minimum_size = Vector2(640, 0)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -363.5
+offset_top = -229.0
+offset_right = 363.5
+offset_bottom = 229.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Logo" type="TextureRect" parent="Main"]
+custom_minimum_size = Vector2(400, 80)
+layout_mode = 2
+size_flags_horizontal = 4
+texture = ExtResource("1_63yqy")
+expand_mode = 1
+
+[node name="Title" type="Label" parent="Main"]
+layout_mode = 2
+theme_type_variation = &"HeaderMedium"
+text = "Установленные версии:"
+horizontal_alignment = 1
+
+[node name="PanelContainer" type="PanelContainer" parent="Main"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Main/PanelContainer"]
+custom_minimum_size = Vector2(0, 240)
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="Versions" type="VBoxContainer" parent="Main/PanelContainer/ScrollContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="NoVersions" type="Label" parent="Main/PanelContainer/ScrollContainer/Versions"]
+visible = false
+layout_mode = 2
+size_flags_vertical = 6
+text = "Пока не установлено ни одной версии.
+Загрузи новейшую с помощью кнопки внизу."
+horizontal_alignment = 1
+
+[node name="Actions" type="HBoxContainer" parent="Main"]
+layout_mode = 2
+alignment = 1
+
+[node name="Download" type="Button" parent="Main/Actions"]
+layout_mode = 2
+tooltip_text = "Выводит список версий на сервере и позволяет скачивать их оттуда"
+text = "Скачать с сервера"
+icon = ExtResource("4_4bsd8")
+
+[node name="Import" type="Button" parent="Main/Actions"]
+layout_mode = 2
+tooltip_text = "Устанавливает версию из специального ZIP-архива с ней"
+text = "Импорт из ZIP"
+icon = ExtResource("5_amdgm")
+
+[node name="Settings" type="Button" parent="Main/Actions"]
+layout_mode = 2
+tooltip_text = "Открывает настройки"
+text = "Настройки"
+icon = ExtResource("5_8nuhe")
+
+[node name="Size" type="Label" parent="Main"]
+layout_mode = 2
+horizontal_alignment = 1
+
+[node name="Status" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -20.0
+offset_top = -31.0
+offset_right = 20.0
+offset_bottom = -8.0
+grow_horizontal = 2
+grow_vertical = 0
+horizontal_alignment = 1
+
+[node name="MouseBlock" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ResetStatusTimer" type="Timer" parent="."]
+wait_time = 3.0
+one_shot = true
+
+[node name="ExportFileDialog" type="FileDialog" parent="."]
+mode_overrides_title = false
+access = 2
+filters = PackedStringArray("*.zip")
+use_native_dialog = true
+
+[connection signal="timeout" from="ResetStatusTimer" to="Status" method="set_text" binds= [""]]
