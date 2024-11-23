@@ -1,0 +1,109 @@
+[gd_scene load_steps=2 format=3 uid="uid://cr7twvhkpm7ah"]
+
+[ext_resource type="Script" path="res://settings/settings.gd" id="1_iirne"]
+
+[node name="Settings" type="Window"]
+auto_translate_mode = 1
+title = "Настройки"
+position = Vector2i(0, 28)
+size = Vector2i(512, 344)
+wrap_controls = true
+transient = true
+exclusive = true
+unresizable = true
+script = ExtResource("1_iirne")
+
+[node name="Background" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer"]
+custom_minimum_size = Vector2(480, 0)
+layout_mode = 2
+
+[node name="ShowUpdates" type="HBoxContainer" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="CenterContainer/VBoxContainer/ShowUpdates"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+tooltip_text = "Включает оповещение о новой стабильной версии"
+mouse_filter = 1
+text = "Оповещать о новых версиях"
+vertical_alignment = 1
+
+[node name="UpdatesCheck" type="CheckButton" parent="CenterContainer/VBoxContainer/ShowUpdates"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ShowBetas" type="HBoxContainer" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="CenterContainer/VBoxContainer/ShowBetas"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+tooltip_text = "Включает отображение бета-версий в списке версий на сервере"
+mouse_filter = 1
+text = "Показывать бета-версии"
+vertical_alignment = 1
+
+[node name="BetasCheck" type="CheckButton" parent="CenterContainer/VBoxContainer/ShowBetas"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ShowBetaUpdates" type="HBoxContainer" parent="CenterContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Label" type="Label" parent="CenterContainer/VBoxContainer/ShowBetaUpdates"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+tooltip_text = "Включает оповещения о новых бета-версиях"
+mouse_filter = 1
+text = "Оповещать о новых бета-версиях"
+vertical_alignment = 1
+
+[node name="BetaUpdatesCheck" type="CheckButton" parent="CenterContainer/VBoxContainer/ShowBetaUpdates"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ArgumentsLabel" type="Label" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+text = "Аргументы запуска"
+
+[node name="ArgumentsEdit" type="LineEdit" parent="CenterContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Аргументы, передаваемые игре при запуске, разделённые пробелом"
+
+[node name="ServerLabel" type="Label" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+text = "URL сервера загрузки"
+
+[node name="ServerEdit" type="LineEdit" parent="CenterContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "URL сервера, с которого будут обноявляться и скачиваться версии. Сервер по умолчанию: https://diamond-studio-games.github.io/circle-shot"
+
+[connection signal="close_requested" from="." to="." method="hide"]
+[connection signal="toggled" from="CenterContainer/VBoxContainer/ShowUpdates/UpdatesCheck" to="." method="_on_updates_check_toggled"]
+[connection signal="toggled" from="CenterContainer/VBoxContainer/ShowBetas/BetasCheck" to="." method="_on_betas_check_toggled"]
+[connection signal="toggled" from="CenterContainer/VBoxContainer/ShowBetaUpdates/BetaUpdatesCheck" to="." method="_on_beta_updates_check_toggled"]
+[connection signal="text_changed" from="CenterContainer/VBoxContainer/ArgumentsEdit" to="." method="_on_arguments_edit_text_changed"]
+[connection signal="text_changed" from="CenterContainer/VBoxContainer/ServerEdit" to="." method="_on_server_edit_text_changed"]

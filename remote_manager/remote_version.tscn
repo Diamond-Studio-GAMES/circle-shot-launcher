@@ -1,0 +1,32 @@
+[gd_scene load_steps=3 format=3 uid="uid://b2y07vkguxpwu"]
+
+[ext_resource type="Texture2D" uid="uid://dvkcdm6s03l3i" path="res://theme/icons/version.png" id="1_jw27c"]
+[ext_resource type="Texture2D" uid="uid://drs5k781fbf3p" path="res://theme/icons/import.png" id="2_0y2ye"]
+
+[node name="RemoteVersion" type="PanelContainer"]
+size_flags_horizontal = 3
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Icon" type="TextureRect" parent="HBoxContainer"]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+texture = ExtResource("1_jw27c")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="VersionName" type="Label" parent="HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"HeaderSmall"
+vertical_alignment = 1
+
+[node name="Download" type="Button" parent="HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 4
+text = "Скачать"
+icon = ExtResource("2_0y2ye")

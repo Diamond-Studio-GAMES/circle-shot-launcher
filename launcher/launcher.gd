@@ -40,6 +40,9 @@ func _ready() -> void:
 	($ImportFileDialog as FileDialog).current_dir = data_path
 	
 	list_local_versions()
+	
+	($Settings as InstancePlaceholder).create_instance(true)
+	($RemoteManager as InstancePlaceholder).create_instance(true)
 
 
 func _notification(what: int) -> void:
@@ -112,7 +115,12 @@ func run_version(version_code: String) -> void:
 	
 	var executable_path: String = _get_version_engine_path(version_code)
 	var pack_path: String = _get_version_pack_path(version_code)
-	var pid: int = OS.create_process(executable_path, PackedStringArray(["--main-pack", pack_path]))
+	var arguments: Array[String] = ["--main-pack", pack_path]
+	var custom_arguments: PackedStringArray = \
+			str(settings_file.get_value("settings", "arguments")).split(' ')
+	for i: String in custom_arguments:
+		arguments.append(i)
+	var pid: int = OS.create_process(executable_path, arguments)
 	if pid == -1:
 		push_error("Can't start game with executable path %s and pack path %s!" % [
 			executable_path,
@@ -151,11 +159,14 @@ func remove_version(version_code: String) -> void:
 	dd.dialog_text = "Удалить версию %s?" % _get_version_name(version_code)
 	dd.confirmed.connect(_remove_version.bind(version_code, true))
 	dd.popup_centered()
-	($MouseBlock as CanvasItem).show()
 	dd.visibility_changed.connect(
 			dd.confirmed.disconnect.bind(_remove_version),
 			CONNECT_DEFERRED | CONNECT_ONE_SHOT
 	)
+
+
+func get_server_url() -> String:
+	return settings_file.get_value("settings", "server")
 
 
 func _export_version(path: String, version_code: String) -> void:
@@ -249,10 +260,15 @@ func _import_version(path: String) -> void:
 			config.has_section_key("config", "code")
 			and str(config.get_value("config", "code")).is_valid_int()
 			and config.has_section_key("config", "name")
+			and typeof(config.get_value("config", "name")) == TYPE_STRING
 			and config.has_section_key("config", "engine_version")
+			and typeof(config.get_value("config", "engine_version")) == TYPE_STRING
 			and config.has_section_key("config", "arch")
+			and typeof(config.get_value("config", "arch")) == TYPE_STRING
 			and config.has_section_key("config", "platform")
+			and typeof(config.get_value("config", "platform")) == TYPE_STRING
 			and config.has_section_key("config", "beta")
+			and typeof(config.get_value("config", "beta")) == TYPE_BOOL
 	):
 		_status.text = "Файл конфигурации в этом архиве содержит не всю информацию!"
 		push_error("versions.cfg don't have all needed information.")
@@ -334,6 +350,7 @@ func _import_version(path: String) -> void:
 	_reset_status_timer.start()
 	($MouseBlock as CanvasItem).hide()
 	print("Import of version %s ended." % _get_version_name(new_version_code))
+	($RemoteManager as RemoteManager).list_remote_versions()
 
 
 func _remove_version(version_code: String, show_message := false) -> void:
@@ -358,6 +375,7 @@ func _remove_version(version_code: String, show_message := false) -> void:
 	if show_message:
 		_status.text = "Версия %s удалена." % version_name
 		_reset_status_timer.start()
+	($RemoteManager as RemoteManager).list_remote_versions()
 
 
 func _validate_version_configs() -> void:
@@ -397,13 +415,18 @@ func _is_version_files_valid(version_code: String) -> bool:
 			and FileAccess.file_exists(_get_version_pack_path(version_code))
 
 
-func _on_export_file_dialog_visibility_changed() -> void:
-	if ($ExportFileDialog as FileDialog).file_selected.is_connected(_export_version):
-		($ExportFileDialog as FileDialog).file_selected.disconnect(_export_version)
-	if ($MouseBlock as CanvasItem).visible:
-		($MouseBlock as CanvasItem).hide()
+func _on_export_file_dialog_canceled() -> void:
+	($ExportFileDialog as FileDialog).file_selected.disconnect(_export_version)
+	($MouseBlock as CanvasItem).hide()
 
 
-func _on_import_file_dialog_visibility_changed() -> void:
-	if ($MouseBlock as CanvasItem).visible:
-		($MouseBlock as CanvasItem).hide()
+func _on_import_file_dialog_canceled() -> void:
+	($MouseBlock as CanvasItem).hide()
+
+
+func _on_settings_pressed() -> void:
+	($Settings as Window).popup_centered()
+
+
+func _on_download_pressed() -> void:
+	($RemoteManager as Window).popup_centered()

@@ -1,0 +1,78 @@
+[gd_scene load_steps=3 format=3 uid="uid://cga545scftbnk"]
+
+[ext_resource type="Script" path="res://remote_manager/remote_manager.gd" id="1_0un1i"]
+[ext_resource type="Texture2D" uid="uid://c750jxbq6r57y" path="res://theme/icons/update.png" id="2_illwp"]
+
+[node name="RemoteManager" type="Window"]
+title = "Версии на сервере"
+position = Vector2i(0, 28)
+size = Vector2i(640, 480)
+wrap_controls = true
+transient = true
+exclusive = true
+unresizable = true
+script = ExtResource("1_0un1i")
+
+[node name="Background" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="Versions" type="VBoxContainer" parent="MarginContainer/VBoxContainer/ScrollContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Status" type="Label" parent="MarginContainer/VBoxContainer/ScrollContainer/Versions"]
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Update" type="Button" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+text = "Обновить"
+icon = ExtResource("2_illwp")
+
+[node name="DownloadDialog" type="ConfirmationDialog" parent="."]
+title = "Подтверждение скачивания"
+unresizable = true
+ok_button_text = "Скачать"
+cancel_button_text = "Отмена"
+
+[node name="VersionsHTTPRequest" type="HTTPRequest" parent="."]
+timeout = 3.0
+
+[node name="EngineVersionsHTTPRequest" type="HTTPRequest" parent="."]
+timeout = 3.0
+
+[connection signal="close_requested" from="." to="." method="hide"]
+[connection signal="pressed" from="MarginContainer/VBoxContainer/Update" to="." method="download_remote_configs"]
+[connection signal="request_completed" from="VersionsHTTPRequest" to="." method="_on_versions_http_request_request_completed"]
+[connection signal="request_completed" from="EngineVersionsHTTPRequest" to="." method="_on_engine_versions_http_request_request_completed"]

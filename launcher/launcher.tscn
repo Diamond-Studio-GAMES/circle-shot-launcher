@@ -153,9 +153,17 @@ unresizable = true
 ok_button_text = "Удалить"
 cancel_button_text = "Отмена"
 
+[node name="Settings" parent="." instance_placeholder="res://settings/settings.tscn"]
+visible = false
+
+[node name="RemoteManager" parent="." instance_placeholder="res://remote_manager/remote_manager.tscn"]
+visible = false
+
+[connection signal="pressed" from="Main/Actions/Download" to="." method="_on_download_pressed"]
 [connection signal="pressed" from="Main/Actions/Import" to="MouseBlock" method="show"]
 [connection signal="pressed" from="Main/Actions/Import" to="ImportFileDialog" method="popup_centered"]
+[connection signal="pressed" from="Main/Actions/Settings" to="." method="_on_settings_pressed"]
 [connection signal="timeout" from="ResetStatusTimer" to="Status" method="set_text" binds= [""]]
-[connection signal="visibility_changed" from="ExportFileDialog" to="." method="_on_export_file_dialog_visibility_changed" flags=3]
+[connection signal="canceled" from="ExportFileDialog" to="." method="_on_export_file_dialog_canceled"]
+[connection signal="canceled" from="ImportFileDialog" to="." method="_on_import_file_dialog_canceled"]
 [connection signal="file_selected" from="ImportFileDialog" to="." method="_import_version"]
-[connection signal="visibility_changed" from="ImportFileDialog" to="." method="_on_import_file_dialog_visibility_changed"]

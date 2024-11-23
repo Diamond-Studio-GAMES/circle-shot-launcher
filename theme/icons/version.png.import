@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dqof8ne6c5lta"
-path="res://.godot/imported/tick_off.png-f1aae9251a2d2569d104aabe0598ad04.ctex"
+uid="uid://dvkcdm6s03l3i"
+path="res://.godot/imported/version.png-e86ee65782e950eed6dd1c58f9490fcc.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://theme/textures/tick_off.png"
-dest_files=["res://.godot/imported/tick_off.png-f1aae9251a2d2569d104aabe0598ad04.ctex"]
+source_file="res://theme/icons/version.png"
+dest_files=["res://.godot/imported/version.png-e86ee65782e950eed6dd1c58f9490fcc.ctex"]
 
 [params]
 
