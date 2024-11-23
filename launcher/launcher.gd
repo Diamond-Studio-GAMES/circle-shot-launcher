@@ -26,6 +26,15 @@ func _ready() -> void:
 	
 	if OS.get_name() == "Windows":
 		executable_suffix = ".exe"
+		# ANGLE библиотеки момент
+		var gles_path: String = OS.get_executable_path().get_base_dir().path_join("libGLESv2.dll")
+		var egl_path: String = OS.get_executable_path().get_base_dir().path_join("libEGL.dll")
+		var gles_dest_path: String = data_path.path_join("libGLESv2.dll")
+		var egl_dest_path: String = data_path.path_join("libEGL.dll")
+		if FileAccess.file_exists(gles_path) and not FileAccess.file_exists(gles_dest_path):
+			DirAccess.copy_absolute(gles_path, gles_dest_path)
+		if FileAccess.file_exists(egl_path) and not FileAccess.file_exists(egl_dest_path):
+			DirAccess.copy_absolute(egl_path, egl_dest_path)
 	
 	($ExportFileDialog as FileDialog).current_dir = data_path
 	($ImportFileDialog as FileDialog).current_dir = data_path
@@ -129,17 +138,20 @@ func export_version(version_code: String) -> void:
 	efd.current_file = "game_v%s.zip" % _get_version_name(version_code)
 	efd.file_selected.connect(_export_version.bind(version_code))
 	efd.popup_centered()
-	efd.visibility_changed.connect(
-			efd.file_selected.disconnect.bind(_export_version),
-			CONNECT_DEFERRED | CONNECT_ONE_SHOT
-	)
+	($MouseBlock as CanvasItem).show()
+
+
+func import_version() -> void:
+	($ImportFileDialog as FileDialog).popup_centered()
+	($MouseBlock as CanvasItem).show()
 
 
 func remove_version(version_code: String) -> void:
 	var dd: ConfirmationDialog = $DeleteDialog
 	dd.dialog_text = "Удалить версию %s?" % _get_version_name(version_code)
-	dd.confirmed.connect(_remove_version.bind(version_code))
+	dd.confirmed.connect(_remove_version.bind(version_code, true))
 	dd.popup_centered()
+	($MouseBlock as CanvasItem).show()
 	dd.visibility_changed.connect(
 			dd.confirmed.disconnect.bind(_remove_version),
 			CONNECT_DEFERRED | CONNECT_ONE_SHOT
@@ -324,7 +336,7 @@ func _import_version(path: String) -> void:
 	print("Import of version %s ended." % _get_version_name(new_version_code))
 
 
-func _remove_version(version_code: String) -> void:
+func _remove_version(version_code: String, show_message := false) -> void:
 	DirAccess.remove_absolute(_get_version_pack_path(version_code))
 	
 	var delete_engine := true
@@ -343,7 +355,9 @@ func _remove_version(version_code: String) -> void:
 	versions_file.erase_section(version_code)
 	print("Removed version %s." % version_code)
 	list_local_versions()
-	_status.text = "Версия %s удалена." % version_name
+	if show_message:
+		_status.text = "Версия %s удалена." % version_name
+		_reset_status_timer.start()
 
 
 func _validate_version_configs() -> void:
@@ -381,3 +395,15 @@ func _get_version_pack_path(version_code: String) -> String:
 func _is_version_files_valid(version_code: String) -> bool:
 	return FileAccess.file_exists(_get_version_engine_path(version_code)) \
 			and FileAccess.file_exists(_get_version_pack_path(version_code))
+
+
+func _on_export_file_dialog_visibility_changed() -> void:
+	if ($ExportFileDialog as FileDialog).file_selected.is_connected(_export_version):
+		($ExportFileDialog as FileDialog).file_selected.disconnect(_export_version)
+	if ($MouseBlock as CanvasItem).visible:
+		($MouseBlock as CanvasItem).hide()
+
+
+func _on_import_file_dialog_visibility_changed() -> void:
+	if ($MouseBlock as CanvasItem).visible:
+		($MouseBlock as CanvasItem).hide()

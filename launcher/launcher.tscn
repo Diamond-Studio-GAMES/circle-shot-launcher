@@ -74,7 +74,7 @@ visible = false
 layout_mode = 2
 size_flags_vertical = 6
 text = "Пока не установлено ни одной версии.
-Загрузи новейшую с помощью кнопки внизу."
+Скачай её с сервера или импортируй из ZIP-архива."
 horizontal_alignment = 1
 
 [node name="Actions" type="HBoxContainer" parent="Main"]
@@ -153,6 +153,9 @@ unresizable = true
 ok_button_text = "Удалить"
 cancel_button_text = "Отмена"
 
+[connection signal="pressed" from="Main/Actions/Import" to="MouseBlock" method="show"]
 [connection signal="pressed" from="Main/Actions/Import" to="ImportFileDialog" method="popup_centered"]
 [connection signal="timeout" from="ResetStatusTimer" to="Status" method="set_text" binds= [""]]
+[connection signal="visibility_changed" from="ExportFileDialog" to="." method="_on_export_file_dialog_visibility_changed" flags=3]
 [connection signal="file_selected" from="ImportFileDialog" to="." method="_import_version"]
+[connection signal="visibility_changed" from="ImportFileDialog" to="." method="_on_import_file_dialog_visibility_changed"]

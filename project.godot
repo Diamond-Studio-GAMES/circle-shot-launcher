@@ -21,6 +21,7 @@ boot_splash/bg_color=Color(0, 0, 0, 1)
 boot_splash/image="res://misc/boot_splash.png"
 config/icon="res://misc/icon.png"
 config/windows_native_icon="res://misc/windows_icon.ico"
+boot_splash/minimum_display_time=500
 
 [audio]
 
@@ -59,7 +60,6 @@ common/enable_object_picking=false
 [rendering]
 
 gl_compatibility/fallback_to_native=false
-gl_compatibility/fallback_to_gles=false
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
 shader_compiler/shader_cache/enabled=false
