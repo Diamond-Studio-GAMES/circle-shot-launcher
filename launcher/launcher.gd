@@ -12,10 +12,11 @@ var _version_scene: PackedScene = preload("uid://cw77pm0u17yb6")
 
 
 func _ready() -> void:
+	get_window().min_size = Vector2i(740, 600)
+	
 	if FileAccess.file_exists(OS.get_executable_path().get_base_dir().path_join("_sc_")) \
 			or FileAccess.file_exists(OS.get_executable_path().get_base_dir().path_join("._sc_")):
-		#data_path = OS.get_executable_path().path_join("data")
-		data_path = "/tmp/data"
+		data_path = OS.get_executable_path().get_base_dir().path_join("data")
 	else:
 		data_path = OS.get_user_data_dir()
 	DirAccess.make_dir_recursive_absolute(data_path)

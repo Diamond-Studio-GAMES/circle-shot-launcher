@@ -55,6 +55,8 @@ theme/custom="res://theme/theme.tres"
 
 [physics]
 
+2d/physics_engine="Dummy"
+3d/physics_engine="Dummy"
 common/enable_object_picking=false
 
 [rendering]

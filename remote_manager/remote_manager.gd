@@ -117,12 +117,13 @@ func list_remote_versions() -> void:
 		highest_installed_version
 	])
 	if not update_showed and highest_version > highest_installed_version \
-			and _launcher.settings_file.get_value("settings", "updates"):
-		update_showed = true
+			and _launcher.settings_file.get_value("settings", "updates") \
+			and highest_installed_version >= 0:
 		var version_code: String = str(highest_version)
 		var engine_version: String = remote_versions.get_value(version_code, "engine_version")
 		var beta: bool = remote_versions.get_value(version_code, "beta")
 		_launcher.show_update(version_code, engine_version, beta)
+	update_showed = true
 
 
 func _clear_versions() -> void:
