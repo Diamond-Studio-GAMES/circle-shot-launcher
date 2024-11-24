@@ -22,7 +22,7 @@ func _ready() -> void:
 	print("Data path set to %s." % data_path)
 	
 	settings_file.load(data_path.path_join("settings.cfg"))
-	versions_file.load(data_path.path_join("versions.cfg"))
+	versions_file.load(data_path.path_join("local_versions.cfg"))
 	
 	if OS.get_name() == "Windows":
 		executable_suffix = ".exe"
@@ -39,10 +39,11 @@ func _ready() -> void:
 	($ExportFileDialog as FileDialog).current_dir = data_path
 	($ImportFileDialog as FileDialog).current_dir = data_path
 	
-	list_local_versions()
-	
 	($Settings as InstancePlaceholder).create_instance(true)
 	($RemoteManager as InstancePlaceholder).create_instance(true)
+	($Downloader as InstancePlaceholder).create_instance(true)
+	
+	list_local_versions()
 
 
 func _notification(what: int) -> void:
@@ -55,7 +56,7 @@ func _notification(what: int) -> void:
 
 func save_files() -> void:
 	settings_file.save(data_path.path_join("settings.cfg"))
-	versions_file.save(data_path.path_join("versions.cfg"))
+	versions_file.save(data_path.path_join("local_versions.cfg"))
 
 
 func list_local_versions() -> void:
@@ -99,6 +100,7 @@ func list_local_versions() -> void:
 		var newest_label: Label = %Versions.get_child(0).get_node(^"%VersionName")
 		newest_label.text = "Новейшая " + newest_label.text
 	save_files()
+	($RemoteManager as RemoteManager).list_remote_versions()
 
 
 func run_version(version_code: String) -> void:
@@ -113,8 +115,8 @@ func run_version(version_code: String) -> void:
 		_remove_version(version_code)
 		return
 	
-	var executable_path: String = _get_version_engine_path(version_code)
-	var pack_path: String = _get_version_pack_path(version_code)
+	var executable_path: String = get_version_engine_path(version_code)
+	var pack_path: String = get_version_pack_path(version_code)
 	var arguments: Array[String] = ["--main-pack", pack_path]
 	var custom_arguments: PackedStringArray = \
 			str(settings_file.get_value("settings", "arguments")).split(' ')
@@ -144,7 +146,7 @@ func export_version(version_code: String) -> void:
 	var efd: FileDialog = $ExportFileDialog
 	efd.title = "Экспорт версии %s" % _get_version_name(version_code)
 	efd.current_file = "game_v%s.zip" % _get_version_name(version_code)
-	efd.file_selected.connect(_export_version.bind(version_code))
+	efd.file_selected.connect(_export_version.bind(version_code), CONNECT_ONE_SHOT)
 	efd.popup_centered()
 	($MouseBlock as CanvasItem).show()
 
@@ -157,16 +159,25 @@ func import_version() -> void:
 func remove_version(version_code: String) -> void:
 	var dd: ConfirmationDialog = $DeleteDialog
 	dd.dialog_text = "Удалить версию %s?" % _get_version_name(version_code)
-	dd.confirmed.connect(_remove_version.bind(version_code, true))
+	dd.confirmed.connect(_remove_version.bind(version_code, true), CONNECT_ONE_SHOT)
 	dd.popup_centered()
-	dd.visibility_changed.connect(
-			dd.confirmed.disconnect.bind(_remove_version),
-			CONNECT_DEFERRED | CONNECT_ONE_SHOT
-	)
 
 
 func get_server_url() -> String:
 	return settings_file.get_value("settings", "server")
+
+
+func get_version_engine_path(version_code: String, engine_version := "") -> String:
+	if engine_version.is_empty():
+		return data_path.path_join(
+				"engine." + str(versions_file.get_value(version_code, "engine_version"))
+				+ executable_suffix
+		)
+	return data_path.path_join("engine." + engine_version + executable_suffix)
+
+
+func get_version_pack_path(version_code: String) -> String:
+	return data_path.path_join("pack." + version_code + ".pck")
 
 
 func _export_version(path: String, version_code: String) -> void:
@@ -206,11 +217,11 @@ func _export_version(path: String, version_code: String) -> void:
 	zip.close_file()
 	
 	zip.start_file("engine")
-	zip.write_file(FileAccess.get_file_as_bytes(_get_version_engine_path(version_code)))
+	zip.write_file(FileAccess.get_file_as_bytes(get_version_engine_path(version_code)))
 	zip.close_file()
 	
 	zip.start_file("pack")
-	zip.write_file(FileAccess.get_file_as_bytes(_get_version_pack_path(version_code)))
+	zip.write_file(FileAccess.get_file_as_bytes(get_version_pack_path(version_code)))
 	zip.close_file()
 	
 	zip.close()
@@ -308,11 +319,11 @@ func _import_version(path: String) -> void:
 		return
 	
 	# Всё наконец-то ОК, распаковываем!
-	var pack_file := FileAccess.open(_get_version_pack_path(new_version_code), FileAccess.WRITE)
+	var pack_file := FileAccess.open(get_version_pack_path(new_version_code), FileAccess.WRITE)
 	if not pack_file:
 		_status.text = "Ошибка распаковки файла с ресурсами!"
 		push_error("Error creating pack file at path %s. Error: %s" % [
-			_get_version_pack_path(new_version_code),
+			get_version_pack_path(new_version_code),
 			error_string(FileAccess.get_open_error())
 		])
 		_reset_status_timer.start()
@@ -323,23 +334,22 @@ func _import_version(path: String) -> void:
 	
 	if not engine_already_installed:
 		var engine_file := FileAccess.open(
-			_get_version_engine_path("", engine_version), FileAccess.WRITE
+			get_version_engine_path("", engine_version), FileAccess.WRITE
 		)
 		if not engine_file:
 			_status.text = "Ошибка распаковки файла движка!"
 			push_error("Error creating engine file at path %s. Error: %s" % [
-				_get_version_engine_path("", engine_version),
+				get_version_engine_path("", engine_version),
 				error_string(FileAccess.get_open_error())
 			])
 			_reset_status_timer.start()
 			($MouseBlock as CanvasItem).hide()
 			return
 		engine_file.store_buffer(zip.read_file("engine"))
-		engine_file.close()
-		
 		if OS.has_feature("linux"):
 			# Выдаём разрешения на запуск
 			OS.execute("/bin/chmod", PackedStringArray(["+x", engine_file.get_path_absolute()]))
+		engine_file.close()
 	
 	versions_file.set_value(new_version_code, "name", config.get_value("config", "name"))
 	versions_file.set_value(new_version_code, "beta", config.get_value("config", "beta"))
@@ -350,11 +360,10 @@ func _import_version(path: String) -> void:
 	_reset_status_timer.start()
 	($MouseBlock as CanvasItem).hide()
 	print("Import of version %s ended." % _get_version_name(new_version_code))
-	($RemoteManager as RemoteManager).list_remote_versions()
 
 
 func _remove_version(version_code: String, show_message := false) -> void:
-	DirAccess.remove_absolute(_get_version_pack_path(version_code))
+	DirAccess.remove_absolute(get_version_pack_path(version_code))
 	
 	var delete_engine := true
 	for section: String in versions_file.get_sections():
@@ -366,7 +375,7 @@ func _remove_version(version_code: String, show_message := false) -> void:
 			break
 	
 	if delete_engine:
-		DirAccess.remove_absolute(_get_version_engine_path(version_code))
+		DirAccess.remove_absolute(get_version_engine_path(version_code))
 	
 	var version_name: String = _get_version_name(version_code)
 	versions_file.erase_section(version_code)
@@ -375,7 +384,6 @@ func _remove_version(version_code: String, show_message := false) -> void:
 	if show_message:
 		_status.text = "Версия %s удалена." % version_name
 		_reset_status_timer.start()
-	($RemoteManager as RemoteManager).list_remote_versions()
 
 
 func _validate_version_configs() -> void:
@@ -397,22 +405,9 @@ func _get_version_name(version_code: String) -> String:
 	return versions_file.get_value(version_code, "name", version_code)
 
 
-func _get_version_engine_path(version_code: String, engine_version := "") -> String:
-	if engine_version.is_empty():
-		return data_path.path_join(
-				"engine." + str(versions_file.get_value(version_code, "engine_version"))
-				+ executable_suffix
-		)
-	return data_path.path_join("engine." + engine_version + executable_suffix)
-
-
-func _get_version_pack_path(version_code: String) -> String:
-	return data_path.path_join("pack." + version_code + ".pck")
-
-
 func _is_version_files_valid(version_code: String) -> bool:
-	return FileAccess.file_exists(_get_version_engine_path(version_code)) \
-			and FileAccess.file_exists(_get_version_pack_path(version_code))
+	return FileAccess.file_exists(get_version_engine_path(version_code)) \
+			and FileAccess.file_exists(get_version_pack_path(version_code))
 
 
 func _on_export_file_dialog_canceled() -> void:
@@ -430,3 +425,7 @@ func _on_settings_pressed() -> void:
 
 func _on_download_pressed() -> void:
 	($RemoteManager as Window).popup_centered()
+
+
+func _on_delete_dialog_canceled() -> void:
+	($DeleteDialog as AcceptDialog).confirmed.disconnect(_remove_version)

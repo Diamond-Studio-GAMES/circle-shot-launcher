@@ -4,7 +4,6 @@ extends Window
 
 var remote_versions := ConfigFile.new()
 var remote_engine_versions := ConfigFile.new()
-var server_url: String
 var versions_downloaded := false
 
 var _remote_version_scene: PackedScene = preload("uid://b2y07vkguxpwu")
@@ -17,7 +16,6 @@ var _remote_version_scene: PackedScene = preload("uid://b2y07vkguxpwu")
 
 
 func _ready() -> void:
-	server_url = _launcher.settings_file.get_value("settings", "server")
 	download_remote_configs()
 
 
@@ -109,7 +107,15 @@ func _clear_versions() -> void:
 
 
 func _download_version_confirm(version_code: String, engine_version: String) -> void:
-	pass
+	var dd: ConfirmationDialog = $DownloadDialog
+	dd.dialog_text = "Скачать версию %s?" % remote_versions.get_value(version_code, "name")
+	dd.confirmed.connect(_download_version.bind(version_code, engine_version), CONNECT_ONE_SHOT)
+	dd.popup_centered()
+
+
+func _download_version(version_code: String, engine_version: String) -> void:
+	hide()
+	(_launcher.get_node(^"Downloader") as Downloader).download_version(version_code, engine_version)
 
 
 func _on_versions_http_request_request_completed(result: HTTPRequest.Result, 
@@ -185,3 +191,7 @@ func _on_engine_versions_http_request_request_completed(result: HTTPRequest.Resu
 	_status.hide()
 	print("Downloaded remote configs.")
 	list_remote_versions()
+
+
+func _on_download_dialog_canceled() -> void:
+	($DownloadDialog as AcceptDialog).confirmed.disconnect(_download_version)

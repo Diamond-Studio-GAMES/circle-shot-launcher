@@ -60,3 +60,7 @@ func _on_arguments_edit_text_changed(new_text: String) -> void:
 func _on_server_edit_text_changed(new_text: String) -> void:
 	_launcher.settings_file.set_value("settings", "server", new_text)
 	_launcher.save_files()
+
+
+func _on_open_data_path_pressed() -> void:
+	OS.shell_show_in_file_manager(_launcher.data_path)

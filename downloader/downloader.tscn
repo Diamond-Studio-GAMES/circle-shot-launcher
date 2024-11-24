@@ -1,12 +1,16 @@
-[gd_scene format=3 uid="uid://b5t1ugaa2odrv"]
+[gd_scene load_steps=2 format=3 uid="uid://b5t1ugaa2odrv"]
+
+[ext_resource type="Script" path="res://downloader/downloader.gd" id="1_16s5j"]
 
 [node name="Downloader" type="Window"]
 auto_translate_mode = 1
+position = Vector2i(0, 28)
 size = Vector2i(480, 80)
 wrap_controls = true
 transient = true
 exclusive = true
 unresizable = true
+script = ExtResource("1_16s5j")
 
 [node name="Background" type="ColorRect" parent="."]
 anchors_preset = 15
@@ -25,8 +29,16 @@ alignment = 1
 
 [node name="DownloadingStatus" type="Label" parent="VBoxContainer"]
 layout_mode = 2
+horizontal_alignment = 1
 
 [node name="DownloadingProgress" type="ProgressBar" parent="VBoxContainer"]
 layout_mode = 2
+max_value = 1.0
 
-[node name="DownloadHTTPRequest" type="HTTPRequest" parent="."]
+[node name="PackDownloadHTTPRequest" type="HTTPRequest" parent="."]
+
+[node name="EngineDownloadHTTPRequest" type="HTTPRequest" parent="."]
+
+[connection signal="close_requested" from="." to="." method="_on_close_requested"]
+[connection signal="request_completed" from="PackDownloadHTTPRequest" to="." method="_on_pack_download_http_request_request_completed"]
+[connection signal="request_completed" from="EngineDownloadHTTPRequest" to="." method="_on_engine_download_http_request_request_completed"]

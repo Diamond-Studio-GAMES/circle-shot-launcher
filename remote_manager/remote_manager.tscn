@@ -57,11 +57,12 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
+tooltip_text = "Заново скачать список версий с сервера"
 text = "Обновить"
 icon = ExtResource("2_illwp")
 
 [node name="DownloadDialog" type="ConfirmationDialog" parent="."]
-title = "Подтверждение скачивания"
+title = "Скачать?"
 unresizable = true
 ok_button_text = "Скачать"
 cancel_button_text = "Отмена"
@@ -74,5 +75,6 @@ timeout = 3.0
 
 [connection signal="close_requested" from="." to="." method="hide"]
 [connection signal="pressed" from="MarginContainer/VBoxContainer/Update" to="." method="download_remote_configs"]
+[connection signal="canceled" from="DownloadDialog" to="." method="_on_download_dialog_canceled"]
 [connection signal="request_completed" from="VersionsHTTPRequest" to="." method="_on_versions_http_request_request_completed"]
 [connection signal="request_completed" from="EngineVersionsHTTPRequest" to="." method="_on_engine_versions_http_request_request_completed"]

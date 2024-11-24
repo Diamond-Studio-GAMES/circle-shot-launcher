@@ -1,12 +1,13 @@
-[gd_scene load_steps=2 format=3 uid="uid://cr7twvhkpm7ah"]
+[gd_scene load_steps=3 format=3 uid="uid://cr7twvhkpm7ah"]
 
 [ext_resource type="Script" path="res://settings/settings.gd" id="1_iirne"]
+[ext_resource type="Texture2D" uid="uid://h7rm6ylxwml1" path="res://theme/icons/folder.png" id="2_i854f"]
 
 [node name="Settings" type="Window"]
 auto_translate_mode = 1
 title = "Настройки"
 position = Vector2i(0, 28)
-size = Vector2i(512, 344)
+size = Vector2i(512, 400)
 wrap_controls = true
 transient = true
 exclusive = true
@@ -101,9 +102,17 @@ unique_name_in_owner = true
 layout_mode = 2
 tooltip_text = "URL сервера, с которого будут обноявляться и скачиваться версии. Сервер по умолчанию: https://diamond-studio-games.github.io/circle-shot"
 
+[node name="OpenDataPath" type="Button" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+text = "Открыть папку с данными"
+icon = ExtResource("2_i854f")
+
 [connection signal="close_requested" from="." to="." method="hide"]
 [connection signal="toggled" from="CenterContainer/VBoxContainer/ShowUpdates/UpdatesCheck" to="." method="_on_updates_check_toggled"]
 [connection signal="toggled" from="CenterContainer/VBoxContainer/ShowBetas/BetasCheck" to="." method="_on_betas_check_toggled"]
 [connection signal="toggled" from="CenterContainer/VBoxContainer/ShowBetaUpdates/BetaUpdatesCheck" to="." method="_on_beta_updates_check_toggled"]
 [connection signal="text_changed" from="CenterContainer/VBoxContainer/ArgumentsEdit" to="." method="_on_arguments_edit_text_changed"]
 [connection signal="text_changed" from="CenterContainer/VBoxContainer/ServerEdit" to="." method="_on_server_edit_text_changed"]
+[connection signal="pressed" from="CenterContainer/VBoxContainer/OpenDataPath" to="." method="_on_open_data_path_pressed"]
