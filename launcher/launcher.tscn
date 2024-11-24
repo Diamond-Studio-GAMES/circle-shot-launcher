@@ -162,6 +162,12 @@ visible = false
 [node name="Downloader" parent="." instance_placeholder="res://downloader/downloader.tscn"]
 visible = false
 
+[node name="UpdateDialog" type="ConfirmationDialog" parent="."]
+title = "Доступно обновление!"
+unresizable = true
+ok_button_text = "Скачать"
+cancel_button_text = "Отмена"
+
 [connection signal="pressed" from="Main/Actions/Download" to="." method="_on_download_pressed"]
 [connection signal="pressed" from="Main/Actions/Import" to="MouseBlock" method="show"]
 [connection signal="pressed" from="Main/Actions/Import" to="ImportFileDialog" method="popup_centered"]
@@ -171,3 +177,4 @@ visible = false
 [connection signal="canceled" from="ImportFileDialog" to="." method="_on_import_file_dialog_canceled"]
 [connection signal="file_selected" from="ImportFileDialog" to="." method="_import_version"]
 [connection signal="canceled" from="DeleteDialog" to="." method="_on_delete_dialog_canceled"]
+[connection signal="canceled" from="UpdateDialog" to="." method="_on_update_dialog_canceled"]

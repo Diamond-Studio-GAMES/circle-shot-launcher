@@ -163,6 +163,18 @@ func remove_version(version_code: String) -> void:
 	dd.popup_centered()
 
 
+func show_update(version_code: String, engine_version: String, beta: bool) -> void:
+	var ud: ConfirmationDialog = $UpdateDialog
+	ud.dialog_text = "Доступна новая %sверсия %s! Скачать её?" % [
+		"бета-" if beta else "",
+		($RemoteManager as RemoteManager).remote_versions.get_value(version_code, "name")
+	]
+	ud.confirmed.connect(
+			($Downloader as Downloader).download_version.bind(version_code, engine_version)
+	)
+	ud.popup_centered()
+
+
 func get_server_url() -> String:
 	return settings_file.get_value("settings", "server")
 
@@ -429,3 +441,9 @@ func _on_download_pressed() -> void:
 
 func _on_delete_dialog_canceled() -> void:
 	($DeleteDialog as AcceptDialog).confirmed.disconnect(_remove_version)
+
+
+func _on_update_dialog_canceled() -> void:
+	($UpdateDialog as AcceptDialog).confirmed.disconnect(
+			($Downloader as Downloader).download_version
+	)

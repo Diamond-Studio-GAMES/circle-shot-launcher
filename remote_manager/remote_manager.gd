@@ -5,6 +5,7 @@ extends Window
 var remote_versions := ConfigFile.new()
 var remote_engine_versions := ConfigFile.new()
 var versions_downloaded := false
+var update_showed := false
 
 var _remote_version_scene: PackedScene = preload("uid://b2y07vkguxpwu")
 
@@ -22,6 +23,7 @@ func _ready() -> void:
 func download_remote_configs() -> void:
 	_clear_versions()
 	versions_downloaded = false
+	update_showed = false
 	_status.show()
 	_status.text = "Скачивание списка версий..."
 	_update_button.disabled = true
@@ -54,6 +56,7 @@ func list_remote_versions() -> void:
 	prints("Installed engines:", supported_engines)
 	
 	var version_nodes: Array[Node]
+	var highest_version: int = -1
 	for version_code: String in remote_versions.get_sections():
 		print("Checking version %s (%s)." % [
 			remote_versions.get_value(version_code, "name"),
@@ -72,6 +75,7 @@ func list_remote_versions() -> void:
 		if remote_versions.get_value(version_code, "beta") \
 				and not _launcher.settings_file.get_value("settings", "betas"):
 			continue
+		
 		var remote_version_node: PanelContainer = _remote_version_scene.instantiate()
 		remote_version_node.name = StringName(version_code)
 		var version_name: String = "Версия %s" % remote_versions.get_value(version_code, "name")
@@ -86,6 +90,12 @@ func list_remote_versions() -> void:
 			(remote_version_node.get_node(^"%Download") as BaseButton).disabled = true
 			(remote_version_node.get_node(^"%Download") as Button).text = "Скачано"
 		version_nodes.append(remote_version_node)
+		
+		if int(version_code) > highest_version:
+			if not remote_versions.get_value(version_code, "beta"):
+				highest_version = int(version_code)
+			elif _launcher.settings_file.get_value("settings", "beta_updates"):
+				highest_version = int(version_code)
 	
 	version_nodes.sort_custom(func(first: Node, second: Node) -> bool:
 		return int(first.name) < int(second.name))
@@ -96,6 +106,23 @@ func list_remote_versions() -> void:
 			%Versions.move_child(node, 0)
 		var newest_label: Label = %Versions.get_child(0).get_node(^"%VersionName")
 		newest_label.text = "Новейшая " + newest_label.text
+	
+	var highest_installed_version: int = -1
+	for installed_version: String in _launcher.versions_file.get_sections():
+		if int(installed_version) > highest_installed_version:
+			highest_installed_version = int(installed_version)
+	
+	print("Highest remote version: %d, highest installed version: %d." % [
+		highest_version,
+		highest_installed_version
+	])
+	if not update_showed and highest_version > highest_installed_version \
+			and _launcher.settings_file.get_value("settings", "updates"):
+		update_showed = true
+		var version_code: String = str(highest_version)
+		var engine_version: String = remote_versions.get_value(version_code, "engine_version")
+		var beta: bool = remote_versions.get_value(version_code, "beta")
+		_launcher.show_update(version_code, engine_version, beta)
 
 
 func _clear_versions() -> void:
