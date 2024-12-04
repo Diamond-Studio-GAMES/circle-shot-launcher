@@ -48,12 +48,12 @@ func list_remote_versions() -> void:
 		var editions: Array = remote_engine_versions.get_value(engine_version, "editions")
 		if my_edition in editions:
 			supported_engines.append(engine_version)
-	prints("Supported remote engines:", supported_engines)
+	print("Supported remote engines: ", supported_engines, '.')
 	
 	var installed_engines: Array[String]
 	for version_code: String in _launcher.versions_file.get_sections():
 		installed_engines.append(_launcher.versions_file.get_value(version_code, "engine_version"))
-	prints("Installed engines:", supported_engines)
+	print("Installed engines: ", supported_engines, '.')
 	
 	var version_nodes: Array[Node]
 	var highest_version: int = -1
@@ -150,10 +150,14 @@ func _on_versions_http_request_request_completed(result: HTTPRequest.Result,
 		response_code: HTTPClient.ResponseCode, _headers: PackedStringArray,
 		body: PackedByteArray) -> void:
 	if result != HTTPRequest.RESULT_SUCCESS:
+		_status.text = "Ошибка скачивания списка версий! Код ошибки: %d" % result
 		push_error("Get versions: result (%d) is not Success!" % result)
+		_update_button.disabled = false
 		return
 	if response_code != HTTPClient.RESPONSE_OK:
+		_status.text = "Ошибка скачивания списка версий! Код ошибки: %d" % response_code
 		push_error("Get versions: response code (%d) is not 200!" % response_code)
+		_update_button.disabled = false
 		return
 	
 	var err: Error = remote_versions.parse(body.get_string_from_utf8())
@@ -192,10 +196,14 @@ func _on_engine_versions_http_request_request_completed(result: HTTPRequest.Resu
 		response_code: HTTPClient.ResponseCode, _headers: PackedStringArray,
 		body: PackedByteArray) -> void:
 	if result != HTTPRequest.RESULT_SUCCESS:
+		_status.text = "Ошибка скачивания списка версий движка! Код ошибки: %d" % result
 		push_error("Get engine versions: result (%d) is not Success!" % result)
+		_update_button.disabled = false
 		return
 	if response_code != HTTPClient.RESPONSE_OK:
+		_status.text = "Ошибка скачивания списка версий движка! Код ошибки: %d" % response_code
 		push_error("Get engine versions: response code (%d) is not 200!" % response_code)
+		_update_button.disabled = false
 		return
 	
 	var err: Error = remote_engine_versions.parse(body.get_string_from_utf8())

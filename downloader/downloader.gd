@@ -6,7 +6,8 @@ enum Status {
 	IDLE = 0,
 	DOWNLOADING_ENGINE = 1,
 	DOWNLOADING_PACK = 2,
-	UNZIPPING = 3,
+	UNZIPPING_PACK = 3,
+	UNZIPPING_ENGINE = 4,
 }
 
 var status := Status.IDLE
@@ -48,9 +49,12 @@ func _process(_delta: float) -> void:
 			else:
 				_progress_bar.value = 0.0
 				_status_label.text = "Скачиваю ресурсы..."
-		Status.UNZIPPING:
+		Status.UNZIPPING_PACK:
 			_progress_bar.value = 1.0
-			_status_label.text = "Распаковка файлов..."
+			_status_label.text = "Распаковка ресурсов..."
+		Status.UNZIPPING_ENGINE:
+			_progress_bar.value = 1.0
+			_status_label.text = "Распаковка движка..."
 
 
 func download_version(version_code: String, engine_version: String) -> void:
@@ -82,7 +86,7 @@ func _download_engine() -> void:
 	]
 	engine_name = engine_name.to_lower()
 	var url: String = _launcher.get_server_url().path_join("engines").path_join(engine_name)
-	print("Downloading engine from %s" % url)
+	print("Downloading engine from %s..." % url)
 	status = Status.DOWNLOADING_ENGINE
 	var err: Error = _engine_http.request(url)
 	if err != OK:
@@ -99,7 +103,7 @@ func _download_pack() -> void:
 	]
 	pack_name = pack_name.to_lower()
 	var url: String = _launcher.get_server_url().path_join("packs").path_join(pack_name)
-	print("Downloading pack from %s" % url)
+	print("Downloading pack from %s..." % url)
 	status = Status.DOWNLOADING_PACK
 	var err: Error = _pack_http.request(url)
 	if err != OK:
@@ -109,9 +113,10 @@ func _download_pack() -> void:
 
 
 func _unzip_and_install() -> void:
-	status = Status.UNZIPPING
+	status = Status.UNZIPPING_PACK
 	await get_tree().process_frame
 	await get_tree().process_frame
+	
 	var zip := ZIPReader.new()
 	
 	var err: Error = zip.open(_launcher.data_path.path_join("tmp.pack.zip"))
@@ -141,6 +146,9 @@ func _unzip_and_install() -> void:
 	zip.close()
 	
 	if FileAccess.file_exists(_launcher.data_path.path_join("tmp.engine.zip")):
+		status = Status.UNZIPPING_ENGINE
+		await get_tree().process_frame
+		
 		err = zip.open(_launcher.data_path.path_join("tmp.engine.zip"))
 		if err != OK:
 			push_error("Error unzipping tmp.engine.zip: %s." % error_string(err))

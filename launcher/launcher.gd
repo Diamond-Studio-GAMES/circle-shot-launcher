@@ -77,13 +77,13 @@ func list_local_versions() -> void:
 		if versions_file.get_value(version_code, "beta"):
 			version_name += " (БЕТА)"
 		(version_node.get_node(^"%VersionName") as Label).text = version_name
-		(version_node.get_node(^"%Run") as Button).pressed.connect(
+		(version_node.get_node(^"%Run") as BaseButton).pressed.connect(
 				run_version.bind(version_code)
 		)
-		(version_node.get_node(^"%Export") as Button).pressed.connect(
+		(version_node.get_node(^"%Export") as BaseButton).pressed.connect(
 				export_version.bind(version_code)
 		)
-		(version_node.get_node(^"%Remove") as Button).pressed.connect(
+		(version_node.get_node(^"%Remove") as BaseButton).pressed.connect(
 				remove_version.bind(version_code)
 		)
 		version_nodes.append(version_node)
@@ -125,7 +125,7 @@ func run_version(version_code: String) -> void:
 		arguments.append(i)
 	var pid: int = OS.create_process(executable_path, arguments)
 	if pid == -1:
-		push_error("Can't start game with executable path %s and pack path %s!" % [
+		push_error("Run: can't start executable at path %s with pack at path %s!" % [
 			executable_path,
 			pack_path
 		])
@@ -177,7 +177,7 @@ func show_update(version_code: String, engine_version: String, beta: bool) -> vo
 
 
 func get_server_url() -> String:
-	return settings_file.get_value("settings", "server")
+	return settings_file.get_value("settings", "server_url")
 
 
 func get_version_engine_path(version_code: String, engine_version := "") -> String:
@@ -202,7 +202,7 @@ func _export_version(path: String, version_code: String) -> void:
 		return
 	
 	print("Exporting to %s." % path)
-	_status.text = "Выполняется экспорт..."
+	_status.text = "Экспорт: создание архива..."
 	($MouseBlock as CanvasItem).show()
 	await get_tree().process_frame
 	await get_tree().process_frame
@@ -210,8 +210,8 @@ func _export_version(path: String, version_code: String) -> void:
 	var zip := ZIPPacker.new()
 	var err: Error = zip.open(path)
 	if err != OK:
-		_status.text = "Ошибка создания ZIP-файла!"
-		push_error("Creating ZIP failed with error %s." % error_string(err))
+		_status.text = "Экспорт: ошибка создания ZIP-файла!"
+		push_error("Export: creating ZIP failed with error %s." % error_string(err))
 		_reset_status_timer.start()
 		($MouseBlock as CanvasItem).hide()
 		return
@@ -229,9 +229,15 @@ func _export_version(path: String, version_code: String) -> void:
 	zip.write_file(config.encode_to_text().to_utf8_buffer())
 	zip.close_file()
 	
+	_status.text = "Экспорт: сжатие движка..."
+	await get_tree().process_frame
+	
 	zip.start_file("engine")
 	zip.write_file(FileAccess.get_file_as_bytes(get_version_engine_path(version_code)))
 	zip.close_file()
+	
+	_status.text = "Экспорт: сжатие ресурсов..."
+	await get_tree().process_frame
 	
 	zip.start_file("pack")
 	zip.write_file(FileAccess.get_file_as_bytes(get_version_pack_path(version_code)))
@@ -247,7 +253,7 @@ func _export_version(path: String, version_code: String) -> void:
 
 func _import_version(path: String) -> void:
 	print("Importing from %s." % path)
-	_status.text = "Выполняется импорт..."
+	_status.text = "Импорт: открытие архива..."
 	($MouseBlock as CanvasItem).show()
 	await get_tree().process_frame
 	await get_tree().process_frame
@@ -255,7 +261,8 @@ func _import_version(path: String) -> void:
 	var zip := ZIPReader.new()
 	var err: Error = zip.open(path)
 	if err != OK:
-		_status.text = "Ошибка открытия ZIP-файла!"
+		push_error("Import: can't open ZIP file. Error: %s." % error_string(err))
+		_status.text = "Импорт: ошибка открытия ZIP-файла!"
 		_reset_status_timer.start()
 		($MouseBlock as CanvasItem).hide()
 		return
@@ -265,8 +272,8 @@ func _import_version(path: String) -> void:
 			and zip.file_exists("pack")
 			and zip.file_exists("version.cfg")
 	):
-		_status.text = "В этом ZIP-файле нет нужных файлов."
-		push_error("ZIP file is missing some files (engine, pack, versions.cfg)")
+		_status.text = "Импорт: в ZIP-файле нет нужных файлов."
+		push_error("Import: ZIP file is missing some files (engine, pack, versions.cfg)")
 		_reset_status_timer.start()
 		($MouseBlock as CanvasItem).hide()
 		return
@@ -274,8 +281,8 @@ func _import_version(path: String) -> void:
 	var config := ConfigFile.new()
 	err = config.parse(zip.read_file("version.cfg").get_string_from_utf8())
 	if err != OK:
-		_status.text = "Не могу открыть файл конфигурации в этом архиве!"
-		push_error("versions.cfg can't be parsed.")
+		_status.text = "Импорт: не могу открыть файл конфигурации в этом архиве!"
+		push_error("Import: versions.cfg can't be parsed.")
 		_reset_status_timer.start()
 		($MouseBlock as CanvasItem).hide()
 		return
@@ -294,8 +301,8 @@ func _import_version(path: String) -> void:
 			and config.has_section_key("config", "beta")
 			and typeof(config.get_value("config", "beta")) == TYPE_BOOL
 	):
-		_status.text = "Файл конфигурации в этом архиве содержит не всю информацию!"
-		push_error("versions.cfg don't have all needed information.")
+		_status.text = "Импорт: файл конфигурации в этом архиве содержит не всю информацию!"
+		push_error("Import: versions.cfg don't have all needed information.")
 		_reset_status_timer.start()
 		($MouseBlock as CanvasItem).hide()
 		return
@@ -304,15 +311,17 @@ func _import_version(path: String) -> void:
 	var engine_version: String = config.get_value("config", "engine_version")
 	
 	if new_version_code in versions_file.get_sections():
-		_status.text = "Эта версия (%s) уже установлена!" % _get_version_name(new_version_code)
-		push_error("This version (%s) is already installed." % _get_version_name(new_version_code))
+		_status.text = "Импорт: эта версия (%s) уже установлена!" \
+				% _get_version_name(new_version_code)
+		push_error("Import: this version (%s) is already installed." \
+				% _get_version_name(new_version_code))
 		_reset_status_timer.start()
 		($MouseBlock as CanvasItem).hide()
 		return
 	
 	if config.get_value("config", "platform") != OS.get_name():
-		_status.text = "Эта версия несовместима с вашей операционной системой!"
-		push_error("Incompatible platforms.")
+		_status.text = "Импорт: эта версия несовместима с вашей операционной системой!"
+		push_error("Import: incompatible platforms.")
 		_reset_status_timer.start()
 		($MouseBlock as CanvasItem).hide()
 		return
@@ -325,17 +334,20 @@ func _import_version(path: String) -> void:
 	
 	if not engine_already_installed \
 			and config.get_value("config", "arch") != Engine.get_architecture_name():
-		_status.text = "Эта версия несовместима с вашей архитектурой процессора!"
-		push_error("Engine this needed version not found. Engine in archive uses different arch.")
+		_status.text = "Импорт: эта версия несовместима с вашей архитектурой процессора!"
+		push_error("Import: engine in archive uses different arch.")
 		_reset_status_timer.start()
 		($MouseBlock as CanvasItem).hide()
 		return
 	
 	# Всё наконец-то ОК, распаковываем!
+	_status.text = "Импорт: распаковка ресурсов..."
+	await get_tree().process_frame
+	
 	var pack_file := FileAccess.open(get_version_pack_path(new_version_code), FileAccess.WRITE)
 	if not pack_file:
-		_status.text = "Ошибка распаковки файла с ресурсами!"
-		push_error("Error creating pack file at path %s. Error: %s" % [
+		_status.text = "Импорт: ошибка распаковки файла с ресурсами!"
+		push_error("Import: error creating pack file at path %s. Error: %s" % [
 			get_version_pack_path(new_version_code),
 			error_string(FileAccess.get_open_error())
 		])
@@ -346,12 +358,14 @@ func _import_version(path: String) -> void:
 	pack_file.close()
 	
 	if not engine_already_installed:
+		_status.text = "Импорт: распаковка движка..."
+		await get_tree().process_frame
 		var engine_file := FileAccess.open(
 			get_version_engine_path("", engine_version), FileAccess.WRITE
 		)
 		if not engine_file:
-			_status.text = "Ошибка распаковки файла движка!"
-			push_error("Error creating engine file at path %s. Error: %s" % [
+			_status.text = "Импорт: ошибка распаковки файла движка!"
+			push_error("Import: error creating engine file at path %s. Error: %s" % [
 				get_version_engine_path("", engine_version),
 				error_string(FileAccess.get_open_error())
 			])
@@ -382,6 +396,7 @@ func _remove_version(version_code: String, show_message := false) -> void:
 	for section: String in versions_file.get_sections():
 		if version_code == section:
 			continue
+		# есть значения по умолчанию так как versions.cfg может быть некорректным
 		if versions_file.get_value(version_code, "engine_version", "-1.0") == \
 				versions_file.get_value(section, "engine_version", "-2.0"):
 			delete_engine = false

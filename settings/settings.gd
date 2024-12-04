@@ -2,7 +2,7 @@ class_name Settings
 extends Window
 
 const DEFAULT_ARGUMENTS := "--disable-update-check"
-const DEFAULT_SERVER := "https://diamond-studio-games.github.io/circle-shot"
+const DEFAULT_SERVER := "https://diamondstudiogames.github.io/circle-shot"
 @onready var _launcher: Launcher = get_parent()
 
 func _ready() -> void:
@@ -19,9 +19,9 @@ func _ready() -> void:
 	
 	var arguments: String = \
 			_launcher.settings_file.get_value("settings", "arguments", DEFAULT_ARGUMENTS)
-	var server: String = _launcher.settings_file.get_value("settings", "server", DEFAULT_SERVER)
+	var server: String = _launcher.settings_file.get_value("settings", "server_url", DEFAULT_SERVER)
 	_launcher.settings_file.set_value("settings", "arguments", arguments)
-	_launcher.settings_file.set_value("settings", "server", server)
+	_launcher.settings_file.set_value("settings", "server_url", server)
 	(%ArgumentsEdit as LineEdit).text = arguments
 	(%ServerEdit as LineEdit).text = server
 
@@ -58,7 +58,7 @@ func _on_arguments_edit_text_changed(new_text: String) -> void:
 
 
 func _on_server_edit_text_changed(new_text: String) -> void:
-	_launcher.settings_file.set_value("settings", "server", new_text)
+	_launcher.settings_file.set_value("settings", "server_url", new_text)
 	_launcher.save_files()
 
 
