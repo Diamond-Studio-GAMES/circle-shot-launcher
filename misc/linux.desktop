@@ -1,0 +1,13 @@
+[Desktop Entry]
+Name=Circle Shot Launcher
+GenericName=Launcher for Circle Shot
+GenericName[ru]=Лаунчер для игры Circle Shot
+Comment=Launcher for Circle Shot
+Comment[ru]=Лаунчер для игры Circle Shot
+Exec=circle-shot-launcher
+Icon=circle-shot-launcher
+Terminal=false
+PrefersNonDefaultGPU=true
+Type=Application
+Categories=Game;
+StartupWMClass=Circle Shot Launcher
